@@ -1,0 +1,46 @@
+﻿<UserControl x:Class="GMP.FlyOuts.HKSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:GMP.FlyOuts"
+             mc:Ignorable="d" 
+             x:Name="HKS"
+             d:DesignHeight="600" d:DesignWidth="300">
+    <Grid>
+        <Grid.Resources>
+            <Thickness Bottom="5" Top="5" Right="5" Left="5" x:Key="ControlMargin"/>
+        </Grid.Resources>
+        <StackPanel>
+            <DockPanel Margin="{StaticResource ControlMargin}">
+                <TextBlock VerticalAlignment="Center" Text="Play/Pause "/>
+                <Controls:HotKeyBox  HotKey="{Binding ElementName=HKS,Path=CommunicationObj.MainWindowInstance.PlayPauseHotKey,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"   Controls:ControlsHelper.ContentCharacterCasing="Upper"/>
+            </DockPanel>
+            <DockPanel Margin="{StaticResource ControlMargin}">
+                <TextBlock VerticalAlignment="Center" Text="Next Song "/>
+                <Controls:HotKeyBox HotKey="{Binding ElementName=HKS,Path=CommunicationObj.MainWindowInstance.NextSongHotKey,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"   Controls:ControlsHelper.ContentCharacterCasing="Upper"/>
+            </DockPanel>
+            <DockPanel Margin="{StaticResource ControlMargin}">
+                <TextBlock VerticalAlignment="Center" Text="Previous Song "/>
+                <Controls:HotKeyBox HotKey="{Binding ElementName=HKS,Path=CommunicationObj.MainWindowInstance.PreviousSongHotKey,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Controls:ControlsHelper.ContentCharacterCasing="Upper"/>
+            </DockPanel>
+            <DockPanel Margin="{StaticResource ControlMargin}">
+                <TextBlock VerticalAlignment="Center" Text="Next PlayList "/>
+                <Controls:HotKeyBox HotKey="{Binding ElementName=HKS,Path=CommunicationObj.MainWindowInstance.NextPlayListHotKey,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Controls:ControlsHelper.ContentCharacterCasing="Upper"/>
+            </DockPanel>
+            <DockPanel Margin="{StaticResource ControlMargin}">
+                <TextBlock VerticalAlignment="Center"  Text="Previous PlayList "/>
+                <Controls:HotKeyBox HotKey="{Binding ElementName=HKS,Path=CommunicationObj.MainWindowInstance.PreviousPlayListHotKey,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Controls:ControlsHelper.ContentCharacterCasing="Upper"/>
+            </DockPanel>
+            <DockPanel Margin="{StaticResource ControlMargin}">
+                <TextBlock VerticalAlignment="Center"  Text="Increase Volume "/>
+                <Controls:HotKeyBox HotKey="{Binding ElementName=HKS,Path=CommunicationObj.MainWindowInstance.IncreaseVolumeHotKey,Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Controls:ControlsHelper.ContentCharacterCasing="Upper"/>
+            </DockPanel>
+            <DockPanel Margin="{StaticResource ControlMargin}">
+                <TextBlock VerticalAlignment="Center"  Text="Decrease Volume "/>
+                <Controls:HotKeyBox HotKey="{Binding ElementName=HKS,Path=CommunicationObj.MainWindowInstance.DecreaseVolumeHotKey,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"  Controls:ControlsHelper.ContentCharacterCasing="Upper"/>
+            </DockPanel>
+        </StackPanel>
+    </Grid>
+</UserControl>

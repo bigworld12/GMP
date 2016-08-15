@@ -1,0 +1,49 @@
+﻿{
+  "CurrentPlayListIndex": -1,
+  "CurrentSongIndex": -1,  
+  "HotKeys": [
+    {
+      "name": "pphk",
+      "key": "q",
+      "mod": [ "alt" ]
+    },
+    {
+      "name": "nshk",
+      "key": "c",
+      "mod": [ "alt" ]
+    },
+    {
+      "name": "pshk",
+      "key": "x",
+      "mod": [ "alt" ]
+    },
+    {
+      "name": "nplhk",
+      "key": "v",
+      "mod": [ "alt" ]
+    },
+    {
+      "name": "pplhk",
+      "key": "z",
+      "mod": [ "alt" ]
+    },
+    {
+      "name": "ivhk",
+      "key": "g",
+      "mod": [ "alt" ]
+    },
+    {
+      "name": "dvhk",
+      "key": "f",
+      "mod": [ "alt" ]
+    }
+  ],
+  "playlists": [
+    {
+      "name": null,
+      "songs": [ ]
+    }
+  ],
+  "Volume": 0.5,
+  "Repeat Mode" : "None"
+}

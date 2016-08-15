@@ -1,0 +1,54 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 14
+VisualStudioVersion = 14.0.25420.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GMP", "GMP\GMP.csproj", "{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Update Tool", "..\ZloUltraLauncher\Update Tool\Update Tool.csproj", "{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "ProtectionManager", "ProtectionManager\ProtectionManager.shproj", "{7FC1DB55-6A2D-4E1E-8541-AD5BA6711DC9}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UpdateHelper", "..\ZloUltraLauncher\Updater\UpdateHelper.csproj", "{8E369536-7E0E-41A1-A337-10A2EC684DF4}"
+EndProject
+Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		ProtectionManager\ProtectionManager.projitems*{7fc1db55-6a2d-4e1e-8541-ad5ba6711dc9}*SharedItemsImports = 13
+		ProtectionManager\ProtectionManager.projitems*{bc38ec64-2263-42e0-b4f1-46be2f5c9be9}*SharedItemsImports = 4
+	EndGlobalSection
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Debug|x86.ActiveCfg = Debug|x86
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Debug|x86.Build.0 = Debug|x86
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Release|x86.ActiveCfg = Release|x86
+		{BC38EC64-2263-42E0-B4F1-46BE2F5C9BE9}.Release|x86.Build.0 = Release|x86
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Debug|x86.Build.0 = Debug|Any CPU
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Release|x86.ActiveCfg = Release|Any CPU
+		{0DFD6580-AC92-439B-BBA1-7DB1B115F3ED}.Release|x86.Build.0 = Release|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Debug|x86.Build.0 = Debug|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Release|x86.ActiveCfg = Release|Any CPU
+		{8E369536-7E0E-41A1-A337-10A2EC684DF4}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
