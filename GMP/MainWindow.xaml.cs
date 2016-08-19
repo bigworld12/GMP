@@ -70,19 +70,20 @@ namespace GMP
 
 
 
-            string GMPFolderPath = @"/bigworld12.tk/GMP";
+            string GMPFolderPath = @"/GMP";
 
             Task.Run(() =>
             {
                 try
                 {
-                    var checkresult = CheckForUpdates(@"bigworld12.tk" , ProtectionManager.TTS.GetFTPCreds() , 21 , App.LocalVersion , $@"{GMPFolderPath}/version.txt" , $@"{GMPFolderPath}/Files" , App.EXEFolder);
+                    var checkresult = CheckForUpdates(@"ftp.bigworld12.tk" , ProtectionManager.TTS.GetFTPCreds() , 21 , App.LocalVersion , $@"{GMPFolderPath}/version.txt" , $@"{GMPFolderPath}/Files" , App.EXEFolder);
                     SendLog($"Server Version : {checkresult.ServerVersion.ToString()}" , LogFlyOut.LogTypes.Warning);
                     if (checkresult.ShouldUpdate)
                     {
+                        
                         SendLog("Found a new Update , Opening the update tool and closing the application");
                         StartUpdating(
-                                "bigworld12.tk" ,
+                                "ftp.bigworld12.tk" ,
                                 Path.Combine(App.EXEFolder , "bwUpdaterTool.exe") ,
                                 App.EXEFolder ,
                                 $@"{GMPFolderPath}/Files" ,
@@ -1153,7 +1154,7 @@ namespace GMP
 
             if (Music.Player.CurrentSong != null)
             {
-                mplstr = $"Currently Playing : {Music.Player.CurrentPlayList.ReadableRepresentation}/{Music.Player.CurrentSong.SongName}";
+                mplstr = $"Currently Playing : {Music.Player.CurrentPlayList.ReadableRepresentation} / {Music.Player.CurrentSong.SongName}";
             }
             else
             {
