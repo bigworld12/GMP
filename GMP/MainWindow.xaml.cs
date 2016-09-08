@@ -18,14 +18,13 @@ using Winforms = System.Windows.Forms;
 using Newtonsoft.Json.Linq;
 using static Updater.UpdateManager;
 using System.Net;
-using System.Collections.ObjectModel;
-using System.ComponentModel;
 using GMP.ViewModel;
 using System.Drawing;
 using System.Drawing.Imaging;
 using GMP.Converters;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using GMP.Controlling_Classes;
 
 namespace GMP
 {
@@ -35,6 +34,23 @@ namespace GMP
     public partial class MainWindow : MetroWindow
     {
         public MainViewModel ViewModel { get { return (MainViewModel)TryFindResource("ViewModel"); } }
+
+
+
+
+
+        public MusicListDropHandler MusicDropHandler
+        {
+            get { return (MusicListDropHandler)GetValue(MusicDropHandlerProperty); }
+            set { SetValue(MusicDropHandlerProperty , value); }
+        }
+
+        // Using a DependencyProperty as the backing store for MusicDropHandler.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty MusicDropHandlerProperty =
+            DependencyProperty.Register("MusicDropHandler" , typeof(MusicListDropHandler) , typeof(MainWindow) , new PropertyMetadata(default(MusicListDropHandler)));
+
+
+
 
         public MainWindow()
         {
@@ -51,6 +67,9 @@ namespace GMP
             InitUpdateGUITimer();
             InitHotkeys();
 
+            DataContext = this;
+            MusicDropHandler = new MusicListDropHandler();
+            MusicDropHandler.ViewModel = ViewModel;
             if (File.Exists(App.SavePath))
             {
                 Settings.Instance.LoadSettings(App.SavePath);
@@ -60,15 +79,16 @@ namespace GMP
             {
                 Settings.Instance.ToJson = Settings.Instance.DefaultSettings;
                 Settings.Instance.SaveSettings(App.SavePath);
+                LoadSettingsIntoGUI();
                 SendLog($"Settings file not found, created a new one at : {App.SavePath}");
             }
 
-            var paras = Environment.GetCommandLineArgs();
-            HandleArguments(paras);
+            //var paras = Environment.GetCommandLineArgs();
+            //HandleArguments(paras);
 
+
+            //Updater.LogListener
             LogListener += MainWindow_LogListener;
-
-
 
             string GMPFolderPath = @"/GMP";
 
@@ -80,7 +100,7 @@ namespace GMP
                     SendLog($"Server Version : {checkresult.ServerVersion.ToString()}" , LogFlyOut.LogTypes.Warning);
                     if (checkresult.ShouldUpdate)
                     {
-                        
+
                         SendLog("Found a new Update , Opening the update tool and closing the application");
                         StartUpdating(
                                 "ftp.bigworld12.tk" ,
@@ -89,14 +109,15 @@ namespace GMP
                                 $@"{GMPFolderPath}/Files" ,
                                 "ftps" ,
                                 checkresult.NewFilesResult ,
-                                @"EAAAAK1Ec+2FsqBnhtxvsAV0CVG/TDCNam53uz6/Dp/ROCXn" ,
-                                @"EAAAAAEuHvaZIT2rp2dlGbOeoHBQsyqKeEr2hii9seNr+/uc");
+                                @"EAAAAImcyr4KPWFBHWLQ2h9iCEBtc9hRvKabmRVGwM63uVba" ,
+                                @"EAAAAJygOLyYRMIa3J6zrm5IC6UENfoGVniQ3h8B58JTqBYV");
                         Application.Current.Dispatcher.Invoke(() => { Application.Current.Shutdown(0); });
                     }
                 }
                 catch { }
             });
         }
+
 
         private void App_SettingsSaved(object sender , JObject e)
         {
@@ -200,14 +221,24 @@ namespace GMP
             {
                 ReadableProgressValue = musicobj.Player.SPosition;
             }
-            if (Music.Player.CurrentSong != null) Music.Player.CurrentSong.Position = Music.Player.SPosition;
-
-
-
-
+            if (Music.Player.CurrentSong != null)
+            {
+                if (!ViewModel.IsUserEditing && Music.Player.CurrentSong.IsUseStartEndRange && Music.Player.CurrentSong.EndPos != Music.Player.CurrentSong.MaxDuration && ReadableProgressValue > Music.Player.CurrentSong.EndPos)
+                {
+                    Music.Player.InvokeCustomMediaEnded();
+                }
+                else if (!ViewModel.IsUserEditing && Music.Player.CurrentSong.IsUseStartEndRange && Music.Player.CurrentSong.StartPos != 0 && ReadableProgressValue < Music.Player.CurrentSong.StartPos)
+                {
+                    Music.Player.SPosition = Music.Player.CurrentSong.StartPos;
+                }
+                Music.Player.CurrentSong.Position = Music.Player.SPosition;
+            }
         }
         public void LoadSettingsIntoGUI()
         {
+            /*  js["isuserange"] = s.IsUseStartEndRange;
+                    js["startpos"] = s.StartPos;
+                    js["endpos"] = s.EndPos;*/
             try
             {
                 //load stuff from the Json file
@@ -225,11 +256,16 @@ namespace GMP
                         {
                             var newsong = new Song(jsong["path"].ToObject<string>() , Music);
                             newsong.IsFav = jsong["isfav"].ToObject<bool>();
+
+                            if (jsong["isuserange"] != null) newsong.IsUseStartEndRange = jsong["isuserange"].ToObject<bool>();
+                            if (jsong["startpos"] != null) newsong.StartPos = jsong["startpos"].ToObject<double>();
+                            if (jsong["endpos"] != null) newsong.EndPos = jsong["endpos"].ToObject<double>();
                             newpl.Add(newsong);
                         }
                     }
                     Music.PlayLists.Add(newpl);
                 }
+
 
 
                 Music.Player.Volume = j["Volume"].ToObject<double>();
@@ -280,7 +316,7 @@ namespace GMP
                 }
 
 
-
+                Music.RepeatMode = (RepeatModes)Enum.Parse(typeof(RepeatModes) , j["Repeat Mode"].ToObject<string>());
                 //hotkeys
                 var jhks = (JArray)j["HotKeys"];
                 foreach (JObject jhk in jhks)
@@ -291,19 +327,31 @@ namespace GMP
                     var x = new HotKey(keyenum , fnalmod);
                     SetValueFromSimpleName(jhk["name"].ToObject<string>() , x);
                 }
-
-
-
-                Music.RepeatMode = (RepeatModes)Enum.Parse(typeof(RepeatModes) , j["Repeat Mode"].ToObject<string>());
             }
             catch (Exception e)
             {
                 SendError(e);
-                throw;
+            }
+            var newdt = new DispatcherTimer();
+            newdt.Interval = TimeSpan.FromSeconds(2);
+            newdt.Tick += Newdt_Tick;
+            newdt.Start();
+        }
+
+        private void Newdt_Tick(object sender , EventArgs e)
+        {
+            var dt = sender as DispatcherTimer;
+            dt.Stop();
+            if (Music.Player.CurrentSong != null)
+            {
+                SongsViewer.ScrollIntoView(Music.Player.CurrentSong);
+            }
+            else
+            {
+                Console.WriteLine("Nope still null");
             }
 
         }
-
 
         public DispatcherTimer UpdateGUITimer;
 
@@ -385,7 +433,7 @@ namespace GMP
             dlg.AddExtension = true;
             dlg.InitialDirectory = Environment.GetFolderPath(Environment.SpecialFolder.MyComputer);
             dlg.Multiselect = true;
-            dlg.Filter = "mp3 files|*.mp3|All Files|*.*";
+            dlg.Filter = "Audio files (*.mp3;*.m4a;*.wma;*.wav;*.w64;*.ogg;*.flac)|*.mp3;*.m4a;*.wma;*.wav;*.w64;*.ogg;*.flac|All Files|*.*";
             var result = dlg.ShowDialog();
             if (result.HasValue && result.Value)
             {
@@ -417,10 +465,11 @@ namespace GMP
             {
                 Music.Player.Stop();
                 Music.Player.Close();
+                var indx = pl.IndexOf(todelete);
                 pl.Remove(todelete);
                 if (pl.Count > 0)
                 {
-                    pl.MoveNext();
+                    pl.MoveNext(indx);
                     Music.Player.Open(pl.CurrentSong , pl);
                 }
                 else
@@ -542,7 +591,7 @@ namespace GMP
         }
         // Using a DependencyProperty as the backing store for ReadableProgressValue.  This enables animation, styling, binding, etc...
         public static readonly DependencyProperty ReadableProgressValueProperty =
-            DependencyProperty.Register("ReadableProgressValue" , typeof(double) , typeof(MainWindow) , new PropertyMetadata(0.0));
+            DependencyProperty.Register("ReadableProgressValue" , typeof(double) , typeof(MainWindow) , new PropertyMetadata(default(double)));
 
         private void PlayingMusicProgressSlider_MouseUp(object sender , MouseButtonEventArgs e)
         {
@@ -563,7 +612,18 @@ namespace GMP
                     UpdateGUITimer.Stop();
                     ViewModel.IsUserEditing = true;
                     var newpos = (e.GetPosition(PlayingMusicProgressSlider).X / PlayingMusicProgressSlider.ActualWidth) * Music.Player.CurrentSong.MaxDuration;
-                    Music.Player.SPosition = newpos;
+                    if (Music.Player.CurrentSong.IsUseStartEndRange)
+                    {
+                        if (newpos < Music.Player.CurrentSong.EndPos)
+                        {
+                            Music.Player.SPosition = newpos;
+                        }
+                    }
+                    else
+                    {
+                        Music.Player.SPosition = newpos;
+                    }
+
                     if (Music.PlayBackStatus != PlayBackStatuses.Paused && Music.PlayBackStatus != PlayBackStatuses.Playing)
                         PlaySongCommand.Execute(Music.Player.CurrentSong);
 
@@ -592,24 +652,13 @@ namespace GMP
             var result = dlg.ShowDialog();
             if (result == Winforms.DialogResult.OK)
             {
-                var selectedpath = dlg.SelectedPath;
-                var filepaths = Directory.GetFiles(selectedpath);
-                string[] allowedextensions = { "mp3" , "m4a" };
-                var mp3files = filepaths.Where(fx =>
-                 {
-                     var filenamwoext = Path.GetExtension(fx).Replace("." , string.Empty).ToLower();
-                     return allowedextensions.Contains(filenamwoext);
-                 });
-                int count = 0;
-                foreach (var x in mp3files)
-                {
-                    var news = new Song(x , Music);
-                    ViewModel.UserSelectedPlayList.Add(news);
-                    count += 1;
-                }
+                IninstCounter count = new IninstCounter();
+                count.Count = 0;
+                ViewModel.AddDirectory(dlg.SelectedPath , count);
                 SendLog($"Added {count} Songs.");
             }
         }
+
 
         private void SaveButton_Click(object sender , RoutedEventArgs e)
         {
@@ -726,6 +775,10 @@ namespace GMP
         private void PlaylistsRepresenter_SelectionChanged(object sender , SelectionChangedEventArgs e)
         {
             ViewModel.OPC("GetMoveToPlaylists");
+            if (Music.Player.CurrentSong != null && Music.Player.CurrentPlayList != null && PlaylistsRepresenter.SelectedItem != null && ((PlayList)PlaylistsRepresenter.SelectedItem).Contains(Music.Player.CurrentSong))
+            {
+                SongsViewer.ScrollIntoView(Music.Player.CurrentSong);
+            }
         }
         private void MoveFirstMenuItem_Click(object sender , RoutedEventArgs e)
         {
@@ -778,7 +831,7 @@ namespace GMP
             int count = 0;
             foreach (var item in Music.PlayLists)
             {
-                foreach (var music in item)
+                foreach (var music in item.ToList())
                 {
                     if (!File.Exists(music.FullPath))
                     {
@@ -789,8 +842,6 @@ namespace GMP
             }
             SendLog($"Removed {count} Invalid Songs");
         }
-
-        
     }
 
     /// <summary>
@@ -1266,7 +1317,7 @@ namespace GMP
             imgcontrol.Source = CreateBitmapSourceFromGdiBitmap(tooverlay);
             tempwin.Height = 500;
             tempwin.Width = 500;
-            
+
             tempwin.Show();
         }
 
@@ -1307,4 +1358,6 @@ namespace GMP
             UpdateImage(new System.Drawing.Size(500 , 300));
         }
     }
+
+
 }

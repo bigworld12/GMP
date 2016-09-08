@@ -24,6 +24,7 @@ bld/
 ProtectionManager/
 GMPInstaller/
 FTP Test/
+MahAppsMetroTests/
 
 *.zip
 # Visual Studio 2015 cache/options directory

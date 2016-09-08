@@ -58,23 +58,31 @@ namespace GMP
         public void SaveSettings(string savepath)
         {
             UpdateSettings();
-            FileInfo file = new FileInfo(savepath);
-            file.Directory.Create();
-            File.WriteAllText(file.FullName , ToJson.ToString());
+
+            File.WriteAllText(savepath , ToJson.ToString());
             App.RaiseSettingsSaved(ToJson);
         }
         public void LoadSettings(string savepath)
         {
-            if (File.Exists(savepath))
+            try
             {
-                ToJson = JObject.Parse(File.ReadAllText(savepath));
+                if (File.Exists(savepath))
+                {
+                    ToJson = JObject.Parse(File.ReadAllText(savepath));
+                }
+                else
+                {
+                    ToJson = DefaultSettings;
+                }
                 App.CommunicationObj.MainWindowInstance.LoadSettingsIntoGUI();
             }
-            else
+            catch (Exception ex)
             {
+                FlyOuts.LogFlyOut.SendLog(null , $"This error happened when loading the settings\nException :\n{ex.ToString()}" , FlyOuts.LogFlyOut.LogTypes.Error);
                 ToJson = DefaultSettings;
             }
-            
+
+
         }
         private JObject m_DefaultSettings;
         public JObject DefaultSettings
@@ -102,7 +110,7 @@ namespace GMP
                 ToJson["CurrentSongIndex"] = mu.Player.CurrentPlayList.IndexOf(mu.Player.CurrentPlayList.CurrentSong);
             }
 
-         
+
             ToJson["Volume"] = mu.Player.Volume;
             ToJson["Repeat Mode"] = mu.RepeatMode.ToString();
 
@@ -138,6 +146,18 @@ namespace GMP
                     var js = new JObject();
                     js["path"] = s.FullPath;
                     js["isfav"] = s.IsFav;
+                    js["isuserange"] = s.IsUseStartEndRange;
+                    js["startpos"] = s.GetActualStartPos();
+                    var actend = s.GetActualEndPos();
+                    if (actend <= -1)
+                    {
+                        js["endpos"] = s.MaxDuration;
+                    }
+                    else
+                    {
+                        js["endpos"] = actend;
+                    }
+
                     jsongs.Add(js);
                 }
                 jpl["songs"] = jsongs;

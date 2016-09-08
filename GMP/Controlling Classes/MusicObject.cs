@@ -61,6 +61,7 @@ namespace GMP.Classes
         }
 
 
+
         private RepeatModes m_repeatMode;
         public RepeatModes RepeatMode
         {

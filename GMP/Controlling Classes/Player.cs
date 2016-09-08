@@ -21,12 +21,10 @@ namespace GMP.Player
             MediaOpened += OnMediaOpened;
             MediaFailed += OnMediaFailed;
             MediaEnded += OnMediaEnded;
-
         }
 
         private void OnMediaEnded(object sender , EventArgs e)
         {
-
             switch (MusicInstance.RepeatMode)
             {
                 case RepeatModes.None:
@@ -53,11 +51,11 @@ namespace GMP.Player
 
         private void OnMediaOpened(object sender , EventArgs e)
         {
-            if (CurrentSong.MaxDuration == 0) CurrentSong.MaxDuration = NaturalDuration.TimeSpan.TotalMilliseconds;
-
             Volume = oldvol;
             if (CurrentSong != null && CurrentPlayList != null)
             {
+                if (CurrentSong.MaxDuration <= 0) CurrentSong.MaxDuration = NaturalDuration.TimeSpan.TotalMilliseconds;
+                SPosition = CurrentSong.StartPos;
                 base.Play();
                 MusicInstance.PlayBackStatus = PlayBackStatuses.Playing;
             }
@@ -65,7 +63,7 @@ namespace GMP.Player
 
         private void OnMediaFailed(object sender , ExceptionEventArgs e)
         {
-            LogFlyOut.SendLog(null , $"Player failed to open : {CurrentSong.FullPath} , maybe it isn't a supported type, removing it from the list\nException :\n{e.ErrorException.ToString()}" , LogFlyOut.LogTypes.Error);
+            LogFlyOut.SendLog(null , $"Player failed to open : {CurrentSong.FullPath}\nMaybe the file type isn't supported (you can try installing its codec https://www.mediaplayercodecpack.com/), removing it from the playlist\nException :\n{e.ErrorException.ToString()}" , LogFlyOut.LogTypes.Error);
             CurrentPlayList.Remove(CurrentSong);
             CurrentSong = null;
             CurrentPlayList = null;
@@ -83,9 +81,37 @@ namespace GMP.Player
                 return Position.TotalMilliseconds;
             }
             set
-            {
+            {              
                 Position = TimeSpan.FromMilliseconds(value);
                 OPC(nameof(SPosition));
+            }
+        }
+
+        public void InvokeCustomMediaEnded()
+        {            
+            foreach (var item in CustomMediaEnded_handlers)
+            {
+                item.Invoke(this , null);
+            }
+        }
+
+        private List<EventHandler> CustomMediaEnded_handlers = new List<EventHandler>();
+        /// <summary>
+        /// a new event that supports the invoke method
+        /// </summary>
+        public new event EventHandler MediaEnded
+        {
+            add
+            {
+                base.MediaEnded += value;
+                if (!CustomMediaEnded_handlers.Contains(value))
+                    CustomMediaEnded_handlers.Add(value);
+            }
+            remove
+            {
+                base.MediaEnded -= value;
+                if (CustomMediaEnded_handlers.Contains(value))
+                    CustomMediaEnded_handlers.Remove(value);
             }
         }
 
@@ -158,7 +184,8 @@ namespace GMP.Player
             {
                 msc.IsCurrent = true;
                 pl.IsCurrent = true;
-                Open(new Uri(msc.FullPath));
+                Open(new Uri(msc.FullPath,UriKind.Absolute));
+                
             }
         }
         public new void Play()
@@ -213,6 +240,7 @@ namespace GMP.Player
         {
             base.Stop();
             MusicInstance.PlayBackStatus = PlayBackStatuses.Stopped;
+            SPosition = CurrentSong.StartPos;
         }
 
 

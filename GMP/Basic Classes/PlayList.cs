@@ -114,7 +114,23 @@ namespace GMP.Classes
                 }
             }
         }
-
+        /// <summary>
+        /// moves to the next song within this playlist starting from a certain index
+        /// </summary>
+        public void MoveNext(int deletedindx)
+        {
+            if (Count > 0)
+            {
+                if (deletedindx >= 0 && deletedindx <= Count - 1)
+                {
+                    CurrentSong = this[deletedindx];
+                }
+                else
+                {
+                    MoveNext();
+                }
+            }
+        }
         public void MovePrevious()
         {
             if (Count > 0)

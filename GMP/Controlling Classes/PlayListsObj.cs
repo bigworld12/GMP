@@ -15,7 +15,7 @@ namespace GMP.Classes
         {
             get
             {
-                return this.Count == 0 && this.All(x => x.Count == 0);
+                return Count == 0 || this.All(x => x.Count == 0);
             }
         }
 

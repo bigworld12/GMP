@@ -14,7 +14,7 @@ namespace GMP
         public static Settings SettingsInstance;
 
 
-        public static readonly Updater.Version LocalVersion = new Updater.Version(1 , 1 , 0 , 0, Updater.VersionType.Beta);
+        public static readonly Updater.Version LocalVersion = new Updater.Version(1 , 1 , 0 , 1, Updater.VersionType.Beta);
 
 
         App()

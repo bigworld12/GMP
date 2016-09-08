@@ -12,16 +12,17 @@
                       xmlns:enums="clr-namespace:GMP.Enums"
                       xmlns:ext="clr-namespace:GMP.Extentions"
                       xmlns:sys="clr-namespace:System;assembly=mscorlib"   
-                      xmlns:calc="clr-namespace:CalcBinding;assembly=CalcBinding"
+                      
                       mc:Ignorable="d"
                       xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
                       BorderThickness="0" 
-                      GlowBrush="Black"                     
+                      GlowBrush="Black"        
+                      xmlns:diag="clr-namespace:System.Diagnostics;assembly=WindowsBase"
                       x:Name="MainWin"
                       ResizeMode="CanMinimize"                      
                       Title="{Binding Path=ReadableTitle,Mode=OneWay,ElementName=MainWin,UpdateSourceTrigger=PropertyChanged}"
                       WindowStartupLocation="CenterScreen" Loaded="MainWin_Loaded"
-                      Height="400" Width="Auto" Icon="1469413104_music.ico" ShowIconOnTitleBar="True">
+                      Height="500" Width="Auto" Icon="1469413104_music.ico" ShowIconOnTitleBar="True">
     <Controls:MetroWindow.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
@@ -73,15 +74,21 @@
                 <TextBlock Text="Playing : "/>
                 <TextBlock Text="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.SongName,FallbackValue='No Songs',UpdateSourceTrigger=PropertyChanged,TargetNullValue='No Songs',IsAsync=True}"/>
             </StackPanel>
-            <ext:FormattedSlider Style="{StaticResource ResourceKey=MetroSlider}" PreviewMouseUp="PlayingMusicProgressSlider_MouseUp" PreviewMouseDown="PlayingMusicProgressSlider_MouseDown" Margin="10" x:Name="PlayingMusicProgressSlider" IsMoveToPointEnabled="True"
-                    AutoToolTipPlacement="BottomRight"                    
-                    AutoToolTipPrecision="2"
+            <ext:FormattedSlider Validation.ErrorTemplate="{x:Null}"
+                                 Style="{StaticResource ResourceKey=MetroSlider}"
+                                 PreviewMouseUp="PlayingMusicProgressSlider_MouseUp"
+                                 PreviewMouseDown="PlayingMusicProgressSlider_MouseDown"
+                                 Margin="10" 
+                                 x:Name="PlayingMusicProgressSlider"
+                                 IsMoveToPointEnabled="True"
+                                 AutoToolTipPlacement="BottomRight"                    
+                                 AutoToolTipPrecision="2"
                                  AutoToolTipTextConverter="{StaticResource ToolTipValueConv}"
-                    Value="{Binding ElementName=MainWin,Path=ReadableProgressValue,UpdateSourceTrigger=PropertyChanged ,FallbackValue=0,TargetNullValue=0,Mode=TwoWay,ValidatesOnDataErrors=False,ValidatesOnExceptions=False,ValidatesOnNotifyDataErrors=False,IsAsync=True}"
-                    Maximum="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.MaxDuration,UpdateSourceTrigger=PropertyChanged,FallbackValue=100,TargetNullValue=100,Mode=OneWay,IsAsync=True}">
+                                 Value="{Binding ElementName=MainWin,Path=ReadableProgressValue,UpdateSourceTrigger=PropertyChanged,Mode=TwoWay}"
+                    Maximum="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.MaxDuration,UpdateSourceTrigger=PropertyChanged,Mode=OneWay}">
+
 
             </ext:FormattedSlider>
-
             <Grid HorizontalAlignment="Stretch">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="150"/>
@@ -113,7 +120,7 @@
                         </Style>
                     </Controls:PackIconMaterial.Style>
                 </Controls:PackIconMaterial>
-                <Controls:PackIconMaterial MouseDown="PlayButton_MouseDown" Width="30" Height="30" Visibility="{Binding Source={StaticResource ViewModel},Path=Music.PlayButtonVisibility,UpdateSourceTrigger=PropertyChanged,IsAsync=True}" HorizontalAlignment="Center">
+                <Controls:PackIconMaterial MouseDown="PlayButton_MouseDown" Width="30" Height="30" Visibility="{Binding Source={StaticResource ViewModel},Path=Music.PlayButtonVisibility,UpdateSourceTrigger=PropertyChanged,FallbackValue=Hidden,TargetNullValue=Hidden}" HorizontalAlignment="Center">
                     <Controls:PackIconMaterial.Style>
                         <Style TargetType="Controls:PackIconMaterial">
                             <Setter Property="Kind" Value="PlayCircle"/>
@@ -126,7 +133,7 @@
                         </Style>
                     </Controls:PackIconMaterial.Style>
                 </Controls:PackIconMaterial>
-                <Controls:PackIconMaterial Width="30" MouseDown="PauseSong_MouseDown" Height="30" Visibility="{Binding Source={StaticResource ViewModel},Path=Music.PauseButtonVisibility,UpdateSourceTrigger=PropertyChanged,IsAsync=True}" HorizontalAlignment="Center">
+                <Controls:PackIconMaterial Width="30" MouseDown="PauseSong_MouseDown" Height="30" Visibility="{Binding Source={StaticResource ViewModel},Path=Music.PauseButtonVisibility,UpdateSourceTrigger=PropertyChanged,FallbackValue=Hidden,TargetNullValue=Hidden}" HorizontalAlignment="Center">
                     <Controls:PackIconMaterial.Style>
                         <Style TargetType="Controls:PackIconMaterial">
                             <Setter Property="Kind" Value="PauseCircle"/>
@@ -141,6 +148,36 @@
                 </Controls:PackIconMaterial>
                 <TextBlock x:Name="ReadableProgressRepresenter" Grid.Column="1" VerticalAlignment="Top" Text="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.ReadableProgress,UpdateSourceTrigger=PropertyChanged,FallbackValue='( 00:00 / 00:00 )',Mode=OneWay}" HorizontalAlignment="Right"/>
             </Grid>
+            <CheckBox ToolTip="When Disabled (UnChecked), plays the entire song"
+                Validation.ErrorTemplate="{x:Null}"
+                IsChecked="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.IsUseStartEndRange,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"
+                Margin="5"
+                Content="Current Song Play Range"  
+                x:Name="IsEnableSongPlayRangeCheckBox"/>
+            <Controls:RangeSlider
+                x:Name="MusicRangeSlider"
+                Margin="10" 
+                Visibility="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.MusicRangeVisibility,Mode=OneWay,FallbackValue=Hidden,TargetNullValue=Hidden}"
+                Validation.ErrorTemplate="{x:Null}"
+                
+                HorizontalAlignment="Stretch"
+                
+                Minimum="0"
+                Maximum="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.MaxDuration,UpdateSourceTrigger=PropertyChanged,FallbackValue=100,TargetNullValue=100,Mode=OneWay}"
+             
+                MinRange="0"
+                MinRangeWidth="0"                
+                
+                
+                
+                LowerValue="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.StartPos,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged,FallbackValue=0,TargetNullValue=0,ValidatesOnDataErrors=False}"
+                UpperValue="{Binding Source={StaticResource ViewModel},Path=Music.Player.CurrentSong.EndPos,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged,ValidatesOnDataErrors=False,FallbackValue=100,TargetNullValue=100}"
+                
+                AutoToolTipPlacement="BottomRight"
+                AutoToolTipPrecision="2"
+                AutoToolTipTextConverter="{StaticResource ToolTipValueConv}"                                
+                
+                IsMoveToPointEnabled="True" Interval="33"/>
         </StackPanel>
 
         <Grid Margin="5" Grid.Row="1">
@@ -185,7 +222,15 @@
                     </ComboBox>
                     <TextBox Controls:TextBoxHelper.Watermark="Rename Selected PlayList" Text="{Binding ElementName=PlaylistsRepresenter,Path=SelectedItem.Name,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" MaxLength="40" Controls:TextBoxHelper.UseFloatingWatermark="True"/>
                 </StackPanel>
-                <ListBox SelectionMode="Extended" HorizontalAlignment="Stretch" dd:DragDrop.IsDragSource="True" dd:DragDrop.IsDropTarget="True" x:Name="SongsViewer" Grid.Row="1" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged,ElementName=PlaylistsRepresenter,Path=SelectedItem,Mode=OneWay,IsAsync=True}" SelectionChanged="SongsViewer_SelectionChanged" SelectedIndex="0">
+                <ListBox IsTextSearchEnabled="True"
+                         IsTextSearchCaseSensitive="False" 
+                         TextSearch.TextPath="SongName" SelectionMode="Extended" HorizontalAlignment="Stretch"
+                         dd:DragDrop.IsDragSource="True"
+                         dd:DragDrop.IsDropTarget="True"
+                         dd:DragDrop.UseDefaultDragAdorner="True"
+                         dd:DragDrop.UseDefaultEffectDataTemplate="True"
+                         dd:DragDrop.DropHandler="{Binding Path=MusicDropHandler}"
+                         x:Name="SongsViewer" Grid.Row="1" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged,ElementName=PlaylistsRepresenter,Path=SelectedItem,Mode=OneWay,IsAsync=True}" SelectionChanged="SongsViewer_SelectionChanged" SelectedIndex="0">
                     <ListBox.Resources>
                         <ContextMenu x:Key="MusicContextMenu">
                             <MenuItem Click="OpenMusicMenuItem_Click" Header="Open"/>
@@ -232,7 +277,7 @@
                             <TextBlock ToolTipService.BetweenShowDelay="0" ToolTipService.InitialShowDelay="500" ToolTipService.ShowOnDisabled="True"
                                        DataContext="{Binding}"
                                        Background="Transparent"
-                                       Text="{Binding UpdateSourceTrigger=PropertyChanged,Path=ReadableRepresentation}">
+                                       Text="{Binding UpdateSourceTrigger=PropertyChanged,Path=ReadableRepresentation,TargetNullValue='Null Name',FallbackValue='Null Name'}">
                                 <TextBlock.InputBindings>
                                     <MouseBinding MouseAction="LeftDoubleClick"
                                                   Command="{Binding ElementName=MainWin,Path=PlaySongCommand}"
@@ -240,7 +285,10 @@
                                 </TextBlock.InputBindings>
                                 <TextBlock.ToolTip>
                                     <ToolTip StaysOpen="True">
-                                        <TextBlock Text="{Binding UpdateSourceTrigger=PropertyChanged,Path=SongName}"/>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding UpdateSourceTrigger=PropertyChanged,Path=SongName,TargetNullValue='Null Name',FallbackValue='Null Name'}"/>
+                                            <TextBlock Text="{Binding UpdateSourceTrigger=PropertyChanged,Path=FullPath,TargetNullValue='Null Path',FallbackValue='Null Path'}"/>
+                                        </StackPanel>                                        
                                     </ToolTip>
                                 </TextBlock.ToolTip>
                             </TextBlock>
@@ -299,13 +347,18 @@
                 </Grid>
 
                 <UniformGrid Columns="3" Grid.Row="3">
-                    <Button Style="{StaticResource AccentedSquareButtonStyle}" Click="AddSongButton_Click" Margin="{StaticResource ControlMargin}" Content="Add song(s)"/>
-                    <Button Style="{StaticResource AccentedSquareButtonStyle}" Click="AddFolderButton_Click" Margin="{StaticResource ControlMargin}" Content="Add Folder(s)"/>
-                    <Button Style="{StaticResource AccentedSquareButtonStyle}" Click="AddPlayListButton_Click" Margin="{StaticResource ControlMargin}" Content="Add PlayList"/>
-                    <Button Style="{StaticResource AccentedSquareButtonStyle}" Click="RemoveSongsButton_Click" Margin="{StaticResource ControlMargin}" Content="Remove Song(s)"/>
-                    <Button Style="{StaticResource AccentedSquareButtonStyle}" Click="RemoveDupilicatesButton_Click" Margin="{StaticResource ControlMargin}" Content="Remove Duplicate Songs"/>
-                    <Button Style="{StaticResource AccentedSquareButtonStyle}" Click="RemovePlayListButton_Click" Margin="{StaticResource ControlMargin}" Content="Remove PlayList"/>
-                    <Button Style="{StaticResource AccentedSquareButtonStyle}" Margin="{StaticResource ControlMargin}" Content="Remove Invalid Songs" Click="RemoveInvalidSongsButton_Click"/>
+                    <UniformGrid.Resources>
+                        <Style TargetType="Button" BasedOn="{StaticResource AccentedSquareButtonStyle}">
+                            <Setter Property="Margin" Value="{StaticResource ControlMargin}"/>
+                        </Style>
+                    </UniformGrid.Resources>
+                    <Button Click="AddSongButton_Click" Content="Add song(s)"/>
+                    <Button Click="AddFolderButton_Click" Content="Add Folder(s)" ToolTip="Adds a folder and its sub-directories,each directory in a separate palylist"/>                    
+                    <Button Click="AddPlayListButton_Click" Content="Add PlayList"/>
+                    <Button Click="RemoveSongsButton_Click" Content="Remove Song(s)"/>
+                    <Button Click="RemoveDupilicatesButton_Click" Content="Remove Duplicate Songs"/>
+                    <Button Click="RemovePlayListButton_Click" Content="Remove PlayList"/>
+                    <Button Click="RemoveInvalidSongsButton_Click" Content="Remove Invalid Songs"/>                    
                 </UniformGrid>
 
 

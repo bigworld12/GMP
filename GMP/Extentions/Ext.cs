@@ -60,4 +60,8 @@ namespace GMP.Extentions
             this.execute(parameter);
         }
     }
+    public class IninstCounter
+    {
+        public int Count { get; set; }
+    }
 }

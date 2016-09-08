@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using static GMP.Extentions.Extentions;
 using static GMP.Extentions.SupportedExtentions;
 namespace GMP.Classes
@@ -31,9 +32,22 @@ namespace GMP.Classes
                 Extension = System.IO.Path.GetExtension(SPath).Replace("." , string.Empty);
                 FullPath = SPath;
                 DirectoryPath = System.IO.Path.GetDirectoryName(SPath);
-                if (IsTagSupported(SPath))
+
+
+
+                try
                 {
                     TagFile = TagLib.File.Create(SPath);
+                }
+                catch (Exception e)
+                {
+                    FlyOuts.LogFlyOut.SendLog(null , $"Error while creating Tag file for path : {SPath}\nException :\n{e.ToString()}" , FlyOuts.LogFlyOut.LogTypes.Error);                    
+                    TagFile = null;
+                }
+               
+                if (TagFile != null)
+                {
+
                     MaxDuration = TagFile.Properties.Duration.TotalMilliseconds;
                     if (!string.IsNullOrWhiteSpace(TagFile.Tag.Title) && !string.IsNullOrWhiteSpace(TagFile.Tag.JoinedAlbumArtists))
                     {
@@ -43,42 +57,19 @@ namespace GMP.Classes
                     {
                         SongName = System.IO.Path.GetFileNameWithoutExtension(SPath);
                     }
+
                 }
                 else
                 {
-                    try
-                    {
-                        TagFile = TagLib.File.Create(SPath);
-                    }
-                    catch
-                    { }
-                    finally
-                    {
-                        if (TagFile != null)
-                        {
-                            MaxDuration = TagFile.Properties.Duration.TotalMilliseconds;
-                            if (!string.IsNullOrWhiteSpace(TagFile.Tag.Title) && !string.IsNullOrWhiteSpace(TagFile.Tag.JoinedAlbumArtists))
-                            {
-                                SongName = $"{TagFile.Tag.JoinedAlbumArtists} - {TagFile.Tag.Title}";
-                            }
-                            else
-                            {
-                                SongName = System.IO.Path.GetFileNameWithoutExtension(SPath);
-                            }
-                        }
-                        else
-                        {
-                            MaxDuration = 0;
-                            SongName = System.IO.Path.GetFileNameWithoutExtension(SPath);
-                        }
-                    }
+                    MaxDuration = 0;
+                    SongName = System.IO.Path.GetFileNameWithoutExtension(SPath);
+
                 }
             }
             else
             {
                 FlyOuts.LogFlyOut.SendLog(null , $"the path {SPath} isn't valid as a file path" , FlyOuts.LogFlyOut.LogTypes.Error);
             }
-
         }
         public bool IsTagSupported(string SPath)
         {
@@ -104,8 +95,104 @@ namespace GMP.Classes
             }
         }
 
+        public double GetActualStartPos()
+        {
+            return m_StartPos;
+        }
+        public double GetActualEndPos()
+        {
+            return m_EndPos;
+        }
+
+        private double m_StartPos = 0;
+        public double StartPos
+        {
+            get
+            {
+                if (!IsUseStartEndRange)
+                {
+                    return 0;
+                }
+                else
+                {
+                    return m_StartPos;
+                }
+
+            }
+            set
+            {
+                m_StartPos = value;
+                OPC(nameof(StartPos));
+            }
+        }
+
+
+        private double m_EndPos = -1;
+        public double EndPos
+        {
+            get
+            {
+                if (!IsUseStartEndRange)
+                {
+                    return MaxDuration;
+                }
+                else
+                {
+                    if (m_EndPos == -1)
+                    {
+                        m_EndPos = MaxDuration;
+                    }
+                    return m_EndPos;
+                }
+            }
+            set
+            {
+                m_EndPos = value;
+                OPC(nameof(EndPos));
+            }
+        }
+
+        private bool m_UseStartEndRange = false;
+
+        public bool IsUseStartEndRange
+        {
+            get { return m_UseStartEndRange; }
+            set
+            {
+                m_UseStartEndRange = value;
+                OPC(nameof(IsUseStartEndRange));
+                OPC(nameof(MusicRangeVisibility));
+            }
+        }
+        public Visibility MusicRangeVisibility
+        {
+            get
+            {
+                try
+                {
+                    if (IsUseStartEndRange)
+                    {
+                        return Visibility.Visible;
+                    }
+                    else
+                    {
+                        return Visibility.Hidden;
+                    }
+                }
+                catch
+                {
+                    return Visibility.Collapsed;
+                }
+            }
+
+        }
+
+
 
         private TimeSpan m_Position;
+        /// <summary>
+        /// the position of the song in milliseconds
+        /// </summary>
         public double Position
         {
             get { return m_Position.TotalMilliseconds; }
@@ -211,6 +298,7 @@ namespace GMP.Classes
                 OPC(nameof(MaxDuration));
                 OPC(nameof(ReadableRepresentation));
                 OPC(nameof(ReadableProgress));
+                OPC(nameof(EndPos));
             }
         }
 
