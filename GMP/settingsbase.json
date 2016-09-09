@@ -45,5 +45,6 @@
     }
   ],
   "Volume": 0.5,
-  "Repeat Mode" : "None"
+  "Repeat Mode": "None",
+  "Latest Save Path": null
 }

@@ -4,6 +4,7 @@
                       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
                       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"                      
                       xmlns:vm="clr-namespace:GMP.ViewModel"                      
+                      Closing="MainWindow_Exited"
                       xmlns:local1="clr-namespace:GMP"
                       xmlns:local="clr-namespace:GMP.Classes"
                       xmlns:flys="clr-namespace:GMP.FlyOuts"
@@ -12,7 +13,7 @@
                       xmlns:enums="clr-namespace:GMP.Enums"
                       xmlns:ext="clr-namespace:GMP.Extentions"
                       xmlns:sys="clr-namespace:System;assembly=mscorlib"   
-                      
+                      xmlns:Views="clr-namespace:GMP.Views"
                       mc:Ignorable="d"
                       xmlns:dd="clr-namespace:GongSolutions.Wpf.DragDrop;assembly=GongSolutions.Wpf.DragDrop"
                       BorderThickness="0" 
@@ -38,11 +39,12 @@
 
             <vm:MainViewModel x:Key="ViewModel"/>
             <flys:CommunicationObject x:Key="comobj"/>
-
+            <Views:MusicDownloader x:Key="DownloaderWindow"/>
             <conv:RepeatModeStringConverter x:Key="RepeatModeStringConv"/>
             <conv:TooltipValueConverter x:Key="ToolTipValueConv"/>
             <conv:TrueToVisibleConverter x:Key="TrueToVisibleConv"/>
             <conv:FalseToVisibleConverter x:Key="FalseToVisibleConv"/>
+            
         </ResourceDictionary>
     </Controls:MetroWindow.Resources>
     <Controls:MetroWindow.RightWindowCommands>
@@ -50,9 +52,15 @@
             <Button Click="OpenHotKeySettingsFlyOut_Click" Content="HotKey Settings"/>
             <Button Click="ShowLogButton_Click" Content="Show Log"/>
             <Button Content="Save" Click="SaveButton_Click"/>
+            <Button Content="Music Downloader" Click="MusicDownloaderButton_Click"/>
             <Button Content="Test Overlay Image" Click="TestOverlayImageButton_Click"></Button>
         </Controls:WindowCommands>
     </Controls:MetroWindow.RightWindowCommands>
+    <Controls:MetroWindow.LeftWindowCommands>
+        <Controls:WindowCommands>
+            <Button Content="Official Page" Click="OfficialPageButton_Click"></Button>
+        </Controls:WindowCommands>
+    </Controls:MetroWindow.LeftWindowCommands>
 
     <Controls:MetroWindow.Flyouts>
         <Controls:FlyoutsControl>
@@ -231,6 +239,13 @@
                          dd:DragDrop.UseDefaultEffectDataTemplate="True"
                          dd:DragDrop.DropHandler="{Binding Path=MusicDropHandler}"
                          x:Name="SongsViewer" Grid.Row="1" ItemsSource="{Binding UpdateSourceTrigger=PropertyChanged,ElementName=PlaylistsRepresenter,Path=SelectedItem,Mode=OneWay,IsAsync=True}" SelectionChanged="SongsViewer_SelectionChanged" SelectedIndex="0">
+                    <ListBox.InputBindings>
+                        <KeyBinding Key="Delete"
+                                    Command="{Binding Source={StaticResource ViewModel},Path=DeleteSongsCommand,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}"
+                                    CommandParameter="{Binding ElementName=SongsViewer,Path=SelectedItems,UpdateSourceTrigger=PropertyChanged}"
+                                    />
+                    </ListBox.InputBindings>
+                    
                     <ListBox.Resources>
                         <ContextMenu x:Key="MusicContextMenu">
                             <MenuItem Click="OpenMusicMenuItem_Click" Header="Open"/>
@@ -328,8 +343,8 @@
                 <StackPanel Grid.Row="1">
                     <TextBlock Text="Volume"/>
                     <Slider IsMoveToPointEnabled="True" Margin="5" Value="{Binding Source={StaticResource ViewModel},Path=Music.Player.Volume,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Maximum="1" HorizontalAlignment="Stretch"/>
-
-
+                    <TextBlock Text="Balance"/>
+                    <Slider IsMoveToPointEnabled="True" Margin="5" IsSnapToTickEnabled="True" TickFrequency="0.2" TickPlacement="Both" Value="{Binding Source={StaticResource ViewModel},Path=Music.Player.Balance,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Minimum="-1" Maximum="1" />
                 </StackPanel>
 
                 <Grid Grid.Row="2">

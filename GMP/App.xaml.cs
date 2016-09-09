@@ -52,11 +52,7 @@ namespace GMP
         }
 
 
-        private void Application_Exit(object sender , ExitEventArgs e)
-        {
-            Settings.Instance.SaveSettings(SavePath);
-            CommunicationObj.MusicInstance.Player.Close();
-        }
+      
 
         private void Application_DispatcherUnhandledException(object sender , System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {

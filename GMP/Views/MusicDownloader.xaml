@@ -1,0 +1,98 @@
+﻿<Controls:MetroWindow
+    x:Class="GMP.Views.MusicDownloader"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"   
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:local="clr-namespace:GMP.Views"
+    xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+    mc:Ignorable="d"
+    Closing="DownloaderWindow_Closing"
+    xmlns:ViewModels="clr-namespace:GMP.ViewModel"
+    SizeToContent="Height"
+    Title="Music Downloader"  Width="511.526">
+    <Controls:MetroWindow.Resources>
+        <ResourceDictionary>
+            <ViewModels:MusicDownloaderViewModel x:Key="ViewModel"/>
+        </ResourceDictionary>
+    </Controls:MetroWindow.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <StackPanel>
+            <DockPanel IsEnabled="{Binding Source={StaticResource ViewModel},Path=IsCanParse,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" Margin="5">
+                <TextBlock Text="URL : " VerticalAlignment="Center"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Grid.Column="0" Text="{Binding Source={StaticResource ViewModel},Path=URL,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}"/>
+                    <Button Click="ParseButton_Click" Grid.Column="1" Content="Parse" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                </Grid>
+
+            </DockPanel>
+            <DockPanel Margin="5">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Setter Property="IsEnabled" Value="True"/>
+                        <Style.Triggers>
+                            <DataTrigger  
+                                Value="True"
+                                Binding="{Binding Source={StaticResource ViewModel},Path=IsDownloading,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+                
+                <TextBlock Text="Save Folder : " VerticalAlignment="Center"/>                
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox IsReadOnly="True" Text="{Binding Source={StaticResource ViewModel},Path=WantedSaveFolder,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" Controls:TextBoxHelper.Watermark="Please select a valid path" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                    <Button Click="SaveAsButton_Click"  Grid.Column="1" HorizontalAlignment="Right" Content=". . ."/>
+                </Grid>
+            </DockPanel>
+            <DockPanel Margin="5">
+                <DockPanel.Style>
+                    <Style TargetType="DockPanel">
+                        <Setter Property="IsEnabled" Value="True"/>
+                        <Style.Triggers>
+                            <DataTrigger  
+                                Value="True"
+                                Binding="{Binding Source={StaticResource ViewModel},Path=IsDownloading,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}">
+                                <Setter Property="IsEnabled" Value="False"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </DockPanel.Style>
+                <TextBlock VerticalAlignment="Center" Text="File Name : "/>
+                <Grid VerticalAlignment="Center" HorizontalAlignment="Stretch">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Text="{Binding Source={StaticResource ViewModel},Path=WantedFileName,Mode=TwoWay,UpdateSourceTrigger=PropertyChanged}" Controls:TextBoxHelper.Watermark="Please select a valid File Name" VerticalAlignment="Center" HorizontalAlignment="Stretch"/>
+                    <TextBlock Grid.Column="1" HorizontalAlignment="Right" Text="{Binding Source={StaticResource ViewModel},Path=WantedExtension,FallbackValue='.mp4',UpdateSourceTrigger=PropertyChanged,Mode=OneWay}" FontSize="16" VerticalAlignment="Center"/>
+                </Grid>
+            </DockPanel>
+            
+            <Controls:ProgressRing IsActive="{Binding Source={StaticResource ViewModel},Path=IsDoingProgress}" Margin="5"></Controls:ProgressRing>
+            <TextBlock Text="{Binding Source={StaticResource ViewModel},Path=CurrentState,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" Margin="5"/>
+           
+            
+            <Button Margin="5" IsEnabled="{Binding Source={StaticResource ViewModel},Path=IsCanDownload,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" Content="Download" Click="DownloadMusicButton_Click"/>
+            <DockPanel IsEnabled="{Binding Source={StaticResource ViewModel},Path=IsCanDownload,Mode=OneWay,UpdateSourceTrigger=PropertyChanged}" Margin="5">
+                <Button Click="DownloadMusicToPlayListButton_Click" Content="Download and Add to Playlist : "/>
+                <ComboBox x:Name="PlayListsCombobox" ItemsSource="{Binding Source={StaticResource ViewModel},Path=Music.PlayLists}" SelectedIndex="0" DisplayMemberPath="ReadableRepresentation"/>
+            </DockPanel>
+
+        </StackPanel>
+    </Grid>
+</Controls:MetroWindow>

@@ -25,13 +25,15 @@ using GMP.Converters;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using GMP.Controlling_Classes;
+using System.Diagnostics;
+using GMP.Views;
 
 namespace GMP
 {
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>    
-    public partial class MainWindow : MetroWindow
+    public partial class MainWindow
     {
         public MainViewModel ViewModel { get { return (MainViewModel)TryFindResource("ViewModel"); } }
 
@@ -55,7 +57,6 @@ namespace GMP
         public MainWindow()
         {
             InitializeComponent();
-
             App.SettingsSaved += App_SettingsSaved;
 
             ViewModel.SetMainWindInstance(this);
@@ -82,7 +83,7 @@ namespace GMP
                 LoadSettingsIntoGUI();
                 SendLog($"Settings file not found, created a new one at : {App.SavePath}");
             }
-
+            DownloaderWindow.ViewModel.Music = ViewModel.Music;
             //var paras = Environment.GetCommandLineArgs();
             //HandleArguments(paras);
 
@@ -118,6 +119,11 @@ namespace GMP
             });
         }
 
+        private void MainWindow_Exited(object sender , EventArgs e)
+        {
+            Settings.Instance.SaveSettings(App.SavePath);
+            Music.Player.Close();
+        }
 
         private void App_SettingsSaved(object sender , JObject e)
         {
@@ -239,104 +245,148 @@ namespace GMP
             /*  js["isuserange"] = s.IsUseStartEndRange;
                     js["startpos"] = s.StartPos;
                     js["endpos"] = s.EndPos;*/
-            try
+
+
+            //load stuff from the Json file
+            if (App.SettingsInstance != null && App.SettingsInstance.ToJson != null)
             {
-                //load stuff from the Json file
+
                 var j = App.SettingsInstance.ToJson;
 
-                var jpl = (JArray)j["playlists"];
-                foreach (JObject item in jpl)
+                try
                 {
-                    var newpl = new PlayList(Music);
-                    newpl.Name = item["name"].ToObject<string>();
-                    var jsongs = (JArray)item["songs"];
-                    foreach (JObject jsong in jsongs)
+                    var jpl = j.GV<JArray>("playlists");
+                    if (jpl != null)
                     {
-                        if (File.Exists(jsong["path"].ToObject<string>()))
+                        foreach (JObject item in jpl)
                         {
-                            var newsong = new Song(jsong["path"].ToObject<string>() , Music);
-                            newsong.IsFav = jsong["isfav"].ToObject<bool>();
+                            var newpl = new PlayList(Music);
+                            newpl.Name = item.GV<string>("name");
+                            var jsongs = item.GV<JArray>("songs");
+                            foreach (JObject jsong in jsongs)
+                            {
+                                if (File.Exists(jsong.GV<string>("path")))
+                                {
+                                    var newsong = new Song(jsong.GV<string>("path") , Music);
+                                    newsong.IsFav = jsong.GV<bool>("isfav");
 
-                            if (jsong["isuserange"] != null) newsong.IsUseStartEndRange = jsong["isuserange"].ToObject<bool>();
-                            if (jsong["startpos"] != null) newsong.StartPos = jsong["startpos"].ToObject<double>();
-                            if (jsong["endpos"] != null) newsong.EndPos = jsong["endpos"].ToObject<double>();
-                            newpl.Add(newsong);
+                                    if (jsong["isuserange"] != null) newsong.IsUseStartEndRange = jsong.GV<bool>("isuserange");
+                                    if (jsong["startpos"] != null) newsong.StartPos = jsong.GV<double>("startpos");
+                                    if (jsong["endpos"] != null) newsong.EndPos = jsong.GV<double>("endpos");
+                                    newpl.Add(newsong);
+                                }
+                            }
+                            Music.PlayLists.Add(newpl);
                         }
                     }
-                    Music.PlayLists.Add(newpl);
                 }
-
-
-
-                Music.Player.Volume = j["Volume"].ToObject<double>();
-
-
-                int curpli = (int)j["CurrentPlayListIndex"];
-                int cursi = (int)j["CurrentSongIndex"];
-
-                //after loading play list
-                if (curpli == -1)
+                catch (Exception e)
                 {
-                    Music.Player.CurrentPlayList = null;
-                    Music.Player.CurrentSong = null;
+                    SendError(e);
                 }
-                else
+                try
                 {
-                    if (cursi == -1)
+                    Music.Player.Volume = j.GV<double>("Volume");
+                }
+                catch (Exception e) { SendError(e); }
+
+
+
+                try
+                {
+                    int cursi = j.GV<int>("CurrentSongIndex");
+                    int curpli = j.GV<int>("CurrentPlayListIndex");
+                    //after loading play list
+                    if (curpli == -1)
                     {
                         Music.Player.CurrentPlayList = null;
                         Music.Player.CurrentSong = null;
                     }
                     else
                     {
-                        if (curpli >= Music.PlayLists.Count)
+                        if (cursi == -1)
                         {
                             Music.Player.CurrentPlayList = null;
                             Music.Player.CurrentSong = null;
                         }
                         else
                         {
-                            //check for song 
-                            var curpl = Music.PlayLists[curpli];
-                            if (cursi >= curpl.Count)
+                            if (curpli >= Music.PlayLists.Count)
                             {
                                 Music.Player.CurrentPlayList = null;
                                 Music.Player.CurrentSong = null;
                             }
                             else
                             {
-                                Music.Player.CurrentPlayList = curpl;
-                                Music.Player.CurrentSong = Music.Player.CurrentPlayList[cursi];
-                                Music.Player.Open(Music.Player.CurrentSong , Music.Player.CurrentPlayList);
+                                //check for song 
+                                var curpl = Music.PlayLists[curpli];
+                                if (cursi >= curpl.Count)
+                                {
+                                    Music.Player.CurrentPlayList = null;
+                                    Music.Player.CurrentSong = null;
+                                }
+                                else
+                                {
+                                    Music.Player.CurrentPlayList = curpl;
+                                    Music.Player.CurrentSong = Music.Player.CurrentPlayList[cursi];
+                                    Music.Player.Open(Music.Player.CurrentSong , Music.Player.CurrentPlayList);
 
-                                PlaylistsRepresenter.SelectedItem = Music.Player.CurrentPlayList;
+                                    PlaylistsRepresenter.SelectedItem = Music.Player.CurrentPlayList;
+                                }
                             }
                         }
                     }
                 }
-
-
-                Music.RepeatMode = (RepeatModes)Enum.Parse(typeof(RepeatModes) , j["Repeat Mode"].ToObject<string>());
-                //hotkeys
-                var jhks = (JArray)j["HotKeys"];
-                foreach (JObject jhk in jhks)
+                catch (Exception e) { SendError(e); }              
+                try
                 {
-                    var keyenum = (Key)Enum.Parse(typeof(Key) , jhk["key"].ToObject<string>());
-
-                    var fnalmod = jhk["mod"].ToObject<string[]>().Select(xz => { ModifierKeys outenum; Enum.TryParse(xz , out outenum); return outenum; }).Aggregate((prev , next) => prev | next);
-                    var x = new HotKey(keyenum , fnalmod);
-                    SetValueFromSimpleName(jhk["name"].ToObject<string>() , x);
+                    Music.RepeatMode = (RepeatModes)Enum.Parse(typeof(RepeatModes) , j.GV<string>("Repeat Mode"));
                 }
+                catch (Exception e) { SendError(e); }
+              
+                try
+                {
+                    //hotkeys
+                    var jhks = j.GV<JArray>("HotKeys");
+                    foreach (JObject jhk in jhks)
+                    {
+                        var keyenum = (Key)Enum.Parse(typeof(Key) , jhk.GV<string>("key"));
+
+                        var fnalmod = jhk.GV<string[]>("mod")?.Select(xz => { ModifierKeys outenum; Enum.TryParse(xz , out outenum); return outenum; }).Aggregate((prev , next) => prev | next);
+                        if (fnalmod.HasValue)
+                        {
+                            var x = new HotKey(keyenum , fnalmod.Value);
+                            SetValueFromSimpleName(jhk.GV<string>("name") , x);
+                        }
+
+                    }
+                }
+                catch (Exception e)
+                {
+                    SendError(e);
+                }
+
+                try
+                {
+                    var savedjson = App.SettingsInstance.ToJson.GV<string>("Latest Save Path");
+                    if (Directory.Exists(savedjson))
+                    {
+                        DownloaderWindow.ViewModel.WantedSaveFolder = savedjson;
+                    }
+                }
+                catch (Exception e)
+                {
+                    SendError(e);
+                }
+
             }
-            catch (Exception e)
-            {
-                SendError(e);
-            }
+
             var newdt = new DispatcherTimer();
             newdt.Interval = TimeSpan.FromSeconds(2);
             newdt.Tick += Newdt_Tick;
             newdt.Start();
         }
+
 
         private void Newdt_Tick(object sender , EventArgs e)
         {
@@ -346,11 +396,6 @@ namespace GMP
             {
                 SongsViewer.ScrollIntoView(Music.Player.CurrentSong);
             }
-            else
-            {
-                Console.WriteLine("Nope still null");
-            }
-
         }
 
         public DispatcherTimer UpdateGUITimer;
@@ -437,62 +482,22 @@ namespace GMP
             var result = dlg.ShowDialog();
             if (result.HasValue && result.Value)
             {
-                int count = 0;
-                foreach (var item in dlg.FileNames)
-                {
-                    var x = new Song(item , Music);
-                    ViewModel.UserSelectedPlayList.Add(x);
-                    count += 1;
-                }
-                SendLog($"Added {count} Songs.");
+                ViewModel.AddSongs(dlg.FileNames , ViewModel.UserSelectedPlayList);
             }
         }
 
         private void RemoveMusicMenuItem_Click(object sender , RoutedEventArgs e)
         {
-            int count = 0;
-            foreach (var item in ViewModel.UserSelectedSongs.ToList())
-            {
-                RemoveSong(item , ViewModel.UserSelectedPlayList);
-                count += 1;
-            }
-            SendLog($"Removed {count} Songs.");
+            ViewModel.RemoveSongs(ViewModel.UserSelectedSongs , ViewModel.UserSelectedPlayList);
         }
-        public void RemoveSong(Song todelete , PlayList pl)
-        {
-            bool wasplay = Music.PlayBackStatus == PlayBackStatuses.Playing;
-            if (ReferenceEquals(Music.Player.CurrentSong , todelete))
-            {
-                Music.Player.Stop();
-                Music.Player.Close();
-                var indx = pl.IndexOf(todelete);
-                pl.Remove(todelete);
-                if (pl.Count > 0)
-                {
-                    pl.MoveNext(indx);
-                    Music.Player.Open(pl.CurrentSong , pl);
-                }
-                else
-                {
-                    Music.Player.CurrentSong = null;
-                }
-            }
-            else
-            {
-                pl.Remove(todelete);
-            }
-        }
+
 
         private void CopyToMenuiItem_Click(object sender , RoutedEventArgs e)
         {
             var menuitm = (MenuItem)sender;
             var playlist = (PlayList)menuitm.DataContext;
 
-            foreach (var item in ViewModel.UserSelectedSongs.ToList())
-            {
-                Song x = new Song(item.FullPath , Music);
-                playlist.Add(x);
-            }
+            ViewModel.AddSongs(ViewModel.UserSelectedSongs , playlist , true);
         }
         private void MoveToMenuiItem_Click(object sender , RoutedEventArgs e)
         {
@@ -505,20 +510,20 @@ namespace GMP
                 //change current playlist to the new playlist
                 Music.Player.CurrentPlayList = playlist;
             }
-
-            foreach (var item in ViewModel.UserSelectedSongs.ToList())
+            var list = ViewModel.UserSelectedSongs.ToList();
+            foreach (var item in list)
             {
-                ViewModel.UserSelectedPlayList.Remove(item);
-                playlist.Add(item);
+                ViewModel.RemoveSong(item , ViewModel.UserSelectedPlayList , true);
+                ViewModel.AddSong(item , playlist , true);
             }
             ViewModel.UserSelectedPlayList = playlist;
+            SendLog($"Moved {list.Count} Songs");
         }
 
 
         private void AddPlayListButton_Click(object sender , RoutedEventArgs e)
         {
-            Music.PlayLists.Add(new PlayList(Music));
-            ViewModel.UserSelectedPlayList = Music.PlayLists.Last();
+            ViewModel.AddPlayList(null);
         }
 
         private void MoveNextSong_MouseDown(object sender , MouseButtonEventArgs e)
@@ -656,6 +661,7 @@ namespace GMP
                 count.Count = 0;
                 ViewModel.AddDirectory(dlg.SelectedPath , count);
                 SendLog($"Added {count} Songs.");
+                Settings.Instance.SaveSettings(App.SavePath);
             }
         }
 
@@ -669,13 +675,7 @@ namespace GMP
 
         private void RemoveSongsButton_Click(object sender , RoutedEventArgs e)
         {
-            int count = 0;
-            foreach (var item in ViewModel.UserSelectedSongs.ToList())
-            {
-                RemoveSong(item , ViewModel.UserSelectedPlayList);
-                count += 1;
-            }
-            SendLog($"Removed {count} Songs.");
+            ViewModel.RemoveSongs(ViewModel.UserSelectedSongs , ViewModel.UserSelectedPlayList);
         }
 
         private void RemoveDupilicatesButton_Click(object sender , RoutedEventArgs e)
@@ -689,50 +689,20 @@ namespace GMP
                 if (!distinct.Contains(item))
                 {
                     removeditems.Add(item);
-                    ViewModel.UserSelectedPlayList.Remove(item);
+                    ViewModel.RemoveSong(item , ViewModel.UserSelectedPlayList , true);
                 }
             }
             SendLog($"Removed {removeditems.Count} Duplicates.");
+            Settings.Instance.SaveSettings(App.SavePath);
         }
 
-        public void DoRemovePlayList(PlayList pl)
-        {
-            if (Music.Player.CurrentPlayList == pl)
-            {
-                //user wants to remove a playlist that has a song that is playing
 
-                //move to the next playlist
-                Music.PlayLists.MoveNext();
-
-                if (Music.Player.CurrentPlayList == pl)
-                {
-                    //it's the only playlist with songs
-                    Music.Player.Stop();
-                    Music.Player.CurrentSong = null;
-                    Music.Player.CurrentPlayList = null;
-                    Music.PlayLists.Remove(pl);
-                }
-                else
-                {
-                    //moved to the next playlist successfully                        
-                    Music.PlayLists.Remove(pl);
-                    //open only if Current song previously existed in removed playlist
-                    Music.Player.Open(Music.Player.CurrentSong , Music.Player.CurrentPlayList);
-                }
-            }
-            else
-            {
-                //remove playlist normally
-                Music.PlayLists.Remove(pl);
-            }
-            ViewModel.UserSelectedPlayList = Music.PlayLists[0];
-        }
         private void RemovePlayListButton_Click(object sender , RoutedEventArgs e)
         {
             if (ViewModel.UserSelectedPlayList != null)
             {
-                DoRemovePlayList(ViewModel.UserSelectedPlayList);
-
+                ViewModel.RemovePlayList(ViewModel.UserSelectedPlayList);
+                Settings.Instance.SaveSettings(App.SavePath);
             }
         }
 
@@ -823,24 +793,39 @@ namespace GMP
         {
             var minitem = (MenuItem)sender;
             var pl = (PlayList)minitem.DataContext;
-            DoRemovePlayList(pl);
+            ViewModel.RemovePlayList(pl);
         }
 
         private void RemoveInvalidSongsButton_Click(object sender , RoutedEventArgs e)
         {
             int count = 0;
+
             foreach (var item in Music.PlayLists)
             {
-                foreach (var music in item.ToList())
+                var todelete = item.Where(x => !File.Exists(x.FullPath));
+                foreach (var music in todelete)
                 {
-                    if (!File.Exists(music.FullPath))
-                    {
-                        RemoveSong(music , item);
-                        count += 1;
-                    }
+                    ViewModel.RemoveSong(music , item , true);
+                    count += 1;
                 }
             }
             SendLog($"Removed {count} Invalid Songs");
+            Settings.Instance.SaveSettings(App.SavePath);
+        }
+
+        private void OfficialPageButton_Click(object sender , RoutedEventArgs e)
+        {
+            Process.Start(@"https://bigworld12.github.io/GMP/");
+        }
+        public MusicDownloader DownloaderWindow
+        {
+            get { return (MusicDownloader)TryFindResource("DownloaderWindow"); }
+        }
+
+        private void MusicDownloaderButton_Click(object sender , RoutedEventArgs e)
+        {
+            DownloaderWindow.WindowStartupLocation = WindowStartupLocation.CenterScreen;
+            DownloaderWindow.Visibility = Visibility.Visible;
         }
     }
 
@@ -1010,11 +995,11 @@ namespace GMP
 
         public void SendLog(string log , LogFlyOut.LogTypes type = LogFlyOut.LogTypes.Normal)
         {
-            LogFlyOut.SendLog(DateTime.Now , log , type);
+            ViewModel.SendLog(log , type);
         }
         public void SendError(Exception ex)
         {
-            SendLog(ex.ToString() , LogFlyOut.LogTypes.Error);
+            ViewModel.SendError(ex);
         }
 
         /// <summary>

@@ -32,7 +32,7 @@ namespace GMP.FlyOuts
         private static BlockCollection Blocks;
 
         public static void SendLog(DateTime? time , string message , LogTypes level)
-        {            
+        {
             Action action = () =>
             {
                 if (!time.HasValue)
@@ -59,7 +59,7 @@ namespace GMP.FlyOuts
                         break;
                 }
                 //normal color
-               
+
 
 
                 Run MessageText = new Run(message);
@@ -72,9 +72,12 @@ namespace GMP.FlyOuts
                 Blocks.Add(NewParagraph);
             };
 
-
-            if (Application.Current.Dispatcher.CheckAccess() == false) { Application.Current.Dispatcher.Invoke(action); }
-            else { action(); }
+            try
+            {
+                if (Application.Current.Dispatcher.CheckAccess() == false) { Application.Current.Dispatcher.Invoke(action); }
+                else { action(); }
+            }
+            catch { }
         }
 
         private void ClearButton_Click(object sender , RoutedEventArgs e)

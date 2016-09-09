@@ -29,7 +29,7 @@
     <ProductName>GMP™</ProductName>
     <PublisherName>bigworld12</PublisherName>
     <TrustUrlParameters>true</TrustUrlParameters>
-    <ApplicationRevision>40</ApplicationRevision>
+    <ApplicationRevision>43</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -107,6 +107,10 @@
       <HintPath>..\packages\gong-wpf-dragdrop.1.0.0\lib\net45\GongSolutions.Wpf.DragDrop.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="libvideo, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\VideoLibrary.1.3.4\lib\portable-net45+win+wpa81+MonoAndroid10+xamarinios10+MonoTouch10\libvideo.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="MahApps.Metro, Version=1.3.0.176, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MahApps.Metro.1.3.0-ALPHA176\lib\net45\MahApps.Metro.dll</HintPath>
       <Private>True</Private>
@@ -149,6 +153,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Controlling Classes\MusicListDropHandler.cs" />
+    <Compile Include="Extentions\ProgressStream.cs" />
     <Compile Include="Extentions\ReadableObject.cs" />
     <Compile Include="Extentions\SupportedExtentions.cs" />
     <Compile Include="Extentions\ListBoxHelper.cs" />
@@ -156,6 +161,10 @@
       <DependentUpon>UpdateWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="ViewModel\MainViewModel.cs" />
+    <Compile Include="ViewModel\MusicDownloaderViewModel.cs" />
+    <Compile Include="Views\MusicDownloader.xaml.cs">
+      <DependentUpon>MusicDownloader.xaml</DependentUpon>
+    </Compile>
     <Page Include="FlyOuts\HKSettings.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -192,6 +201,10 @@
       <SubType>Code</SubType>
     </Compile>
     <Page Include="Extentions\UpdateWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Views\MusicDownloader.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

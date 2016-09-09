@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Newtonsoft.Json.Linq;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -9,6 +10,43 @@ namespace GMP.Extentions
 {
     public static class Extentions
     {
+        public static T GV<T>(this JToken from , string name)
+        {
+            if (from == null) return default(T);
+            else
+            {
+                if (from[name] == null)
+                {
+                    return default(T);
+                }
+                else
+                {
+                    return from[name].ToObject<T>();
+                }
+                
+            }
+        }
+        public static T GV<T>(this JToken from , params string[] names)
+        {
+            if (from == null) return default(T);
+            else
+            {
+                JToken start = from;
+                foreach (var item in names)
+                {
+                    if (start == null || start[item] == null)
+                    {
+                        return default(T);
+                    }
+                    else
+                    {
+                        start = start[item];
+                    }                    
+                }
+                return start.ToObject<T>();
+            }
+        }
+
         public static string FormatDurationMS(TimeSpan duration)
         {
             return ($"{((int)duration.TotalMinutes).ToString("00")}m : {duration.Seconds.ToString("00")}s");
@@ -63,5 +101,9 @@ namespace GMP.Extentions
     public class IninstCounter
     {
         public int Count { get; set; }
+        public override string ToString()
+        {
+            return Count.ToString();
+        }
     }
 }
