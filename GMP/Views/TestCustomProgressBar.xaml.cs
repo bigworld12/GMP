@@ -12,14 +12,14 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 
-namespace GMP
+namespace GMP.Views
 {
     /// <summary>
-    /// Interaction logic for UpdateWindow.xaml
+    /// Interaction logic for TestCustomProgressBar.xaml
     /// </summary>
-    public partial class UpdateWindow : Window
+    public partial class TestCustomProgressBar 
     {
-        public UpdateWindow()
+        public TestCustomProgressBar()
         {
             InitializeComponent();
         }

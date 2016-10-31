@@ -16,7 +16,7 @@ using VideoLibrary;
 
 namespace GMP.ViewModel
 {
-    public class MusicDownloaderViewModel : INotifyPropertyChanged
+    public class MusicDownloaderViewModel : ViewModel
     {
         private string m_WantedFileName;
         /// <summary>
@@ -204,18 +204,6 @@ namespace GMP.ViewModel
 
 
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-
-
-
-        public void OPC(string prop)
-        {
-            App.Current.Dispatcher.Invoke(() =>
-            {
-                PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(prop));
-            });
-        }
 
         public System.Windows.Forms.FolderBrowserDialog SaveDiagInstance;
 

@@ -99,9 +99,9 @@ namespace GMP
                 {
                     var checkresult = CheckForUpdates(@"ftp.bigworld12.tk" , ProtectionManager.TTS.GetFTPCreds() , 21 , App.LocalVersion , $@"{GMPFolderPath}/version.txt" , $@"{GMPFolderPath}/Files" , App.EXEFolder);
                     SendLog($"Server Version : {checkresult.ServerVersion.ToString()}" , LogFlyOut.LogTypes.Warning);
+                    Winforms.MessageBox.Show(checkresult.NewFilesResult.Count.ToString());
                     if (checkresult.ShouldUpdate)
                     {
-
                         SendLog("Found a new Update , Opening the update tool and closing the application");
                         StartUpdating(
                                 "ftp.bigworld12.tk" ,
@@ -113,9 +113,9 @@ namespace GMP
                                 @"EAAAAImcyr4KPWFBHWLQ2h9iCEBtc9hRvKabmRVGwM63uVba" ,
                                 @"EAAAAJygOLyYRMIa3J6zrm5IC6UENfoGVniQ3h8B58JTqBYV");
                         Application.Current.Dispatcher.Invoke(() => { Application.Current.Shutdown(0); });
-                    }
+                    }                 
                 }
-                catch { }
+                catch(Exception ex) { SendError(ex); }
             });
         }
 

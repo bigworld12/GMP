@@ -14,7 +14,7 @@ using GMP.FlyOuts;
 namespace GMP.ViewModel
 {
 
-    public class MainViewModel : INotifyPropertyChanged
+    public class MainViewModel : ViewModel
     {
         private MainWindow _MainWindowInstance;
         private MusicObject m_Music;
@@ -408,11 +408,7 @@ namespace GMP.ViewModel
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
-
-
-
+       
         public Visibility MultiSongsVisiblity
         {
             get
@@ -465,10 +461,7 @@ namespace GMP.ViewModel
         }
 
 
-        public void OPC(string propname)
-        {
-            PropertyChanged?.Invoke(this , new PropertyChangedEventArgs(propname));
-        }
+       
 
 
         /// <summary>
